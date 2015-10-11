@@ -7,6 +7,7 @@ function ScoresCtrl($scope, $http) {
     $scope.init = function() {
         $http.get('/scores/EURUSD?count=48').success(function(data) {
             $scope.scores = data.scores;
+            $scope.scores.reverse();  // the array comes from the server sorted from most recent to oldest
             $scope.scores.map(function(score) {
                 score.timestamp = moment(score.timestamp * 1000).format("HH:mm");
             });
@@ -117,5 +118,14 @@ function ScoresCtrl($scope, $http) {
             score *= -1;
         }
         $scope.latestScoreY = [score, 100.0 - score];
+
+        var maxVolume = $scope.scores.reduce(function(max, score) {
+           return Math.max(max, score.volume);
+        }, 0);
+        var volumeInPercent = maxVolume ? $scope.scores[$scope.scores.length - 1].volume / maxVolume : 0;
+        var donutWidth = volumeInPercent * 60 + 5;
+        $scope.latestScoreOptions = {
+            percentageInnerCutout: donutWidth
+        };
     }
 }
