@@ -1,0 +1,59 @@
+{% raw %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tweet n Trade</title>
+    <link rel="stylesheet" href="/vendor/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/vendor/css/angular-chart.css">
+</head>
+<body ng-app="tweetNTrade">
+    <div ng-controller="ScoresCtrl" ng-init="init()" class="container-fluid">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <div class="jumbotron">
+                    <h1>Twitter sentiment for EUR/USD</h1>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h1>
+                    <span class="label label-primary">Hourly scores</span>
+                </h1>
+                <canvas id="hourlyScores" class="chart chart-polar-area" chart-labels="hourlyScoresX"
+                        chart-data="hourlyScoresY" chart-colours="hourlyScoresColours"></canvas>
+            </div>
+            <div class="col-md-6">
+                <h1>
+                    <span class="label label-success">Last hour</span>
+                </h1>
+                <canvas id="latestScore" class="chart chart-doughnut" chart-labels="latestScoreX"
+                        chart-data="latestScoreY" chart-colours="latestScoreColours"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <h1>
+                    <span class="label label-warning">Scores</span>
+                </h1>
+                <canvas id="rawScores" class="chart chart-line" chart-labels="rawScoresX" chart-data="rawScoresY"
+                        chart-series="rawScoresSeries" chart-options="rawScoresOptions"></canvas>
+            </div>
+            <div class="col-md-6">
+                <h1>
+                    <span class="label label-info">Volume</span>
+                </h1>
+                <canvas id="volume" class="chart chart-bar" chart-labels="volumeX" chart-data="volumeY"
+                        chart-series="volumeSeries"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="/vendor/js/angular.min.js"></script>
+    <script src="/vendor/js/moment.min.js"></script>
+    <script src="/vendor/js/Chart.min.js"></script>
+    <script src="/vendor/js/angular-chart.js"></script>
+    <script src="/views/js/controllers.js"></script>
+</body>
+</html>
+{% endraw %}

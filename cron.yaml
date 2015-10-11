@@ -1,0 +1,4 @@
+cron:
+- description: polling job
+  url: /poll
+  schedule: every 30 minutes synchronized
