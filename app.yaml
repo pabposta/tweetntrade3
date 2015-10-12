@@ -18,6 +18,9 @@ handlers:
 - url: /views/js
   static_dir: views/js
 
+- url: /views/css
+  static_dir: views/css
+
 - url: /poll
   script: main.app
   login: admin

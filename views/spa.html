@@ -6,6 +6,7 @@
     <title>Tweet n Trade</title>
     <link rel="stylesheet" href="/vendor/css/bootstrap.min.css">
     <link rel="stylesheet" href="/vendor/css/angular-chart.css">
+    <link rel="stylesheet" href="/views/css/spa.css">
 </head>
 <body ng-app="tweetNTrade">
     <div ng-controller="ScoresCtrl" ng-init="init()" class="container-fluid">
@@ -49,11 +50,16 @@
                         chart-series="volumeSeries"></canvas>
             </div>
         </div>
+{% endraw %}
+        {% include 'views/_chart.html' %}
+{% raw %}
     </div>
     <script src="/vendor/js/angular.min.js"></script>
     <script src="/vendor/js/moment.min.js"></script>
     <script src="/vendor/js/Chart.min.js"></script>
     <script src="/vendor/js/angular-chart.js"></script>
+    <script src="/vendor/js/jquery-2.1.4.min.js"></script>
+    <script src="/vendor/js/bootstrap.min.js"></script>
     <script src="/views/js/controllers.js"></script>
 </body>
 </html>

@@ -123,7 +123,7 @@ function ScoresCtrl($scope, $http) {
            return Math.max(max, score.volume);
         }, 0);
         var volumeInPercent = maxVolume ? $scope.scores[$scope.scores.length - 1].volume / maxVolume : 0;
-        var donutWidth = volumeInPercent * 60 + 5;
+        var donutWidth = 95.0 - volumeInPercent * 60;
         $scope.latestScoreOptions = {
             percentageInnerCutout: donutWidth
         };

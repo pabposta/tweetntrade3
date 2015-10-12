@@ -1,0 +1,7 @@
+[aria-expanded="true"] .is-show {
+    display: none;
+}
+
+[aria-expanded="false"] .is-hide {
+    display: none;
+}
