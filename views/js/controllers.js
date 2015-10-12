@@ -109,9 +109,10 @@ function ScoresCtrl($scope, $http) {
     }
 
     function latestScore() {
-        var score = $scope.hvwa[$scope.hvwa.length - 3];
+        var score = $scope.hvwa[$scope.hvwa.length - 1];
         var hex = color(score);
         score = (score * 100.0).toFixed(2);
+        
         $scope.latestScoreX = [$scope.hourlyLabels[$scope.hourlyLabels.length - 1], ''];
         $scope.latestScoreColours = [hex, '#7f7f7f'];
         if (score < 0) {
