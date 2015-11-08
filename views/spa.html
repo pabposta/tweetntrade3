@@ -17,12 +17,13 @@
                 </div>
             </div>
         </div>
-        <div class="row" ng-repeat="s in series">
+        <div class="row" ng-repeat="s in series" ng-cloak>
             <div class="col-md-12">
                 <h1>
                     <span class="label label-info">{{ s.symbol }}</span>
                 </h1>
-                <canvas class="chart chart-bar" chart-labels="s.x" chart-data="s.y" chart-series="s.names"></canvas>
+                <canvas class="chart chart-bar" chart-labels="s.x" chart-data="s.y" chart-series="s.names",
+                        chart-colours="s.colors" chart-options="chartOptions" height="100"></canvas>
             </div>
         </div>
     </div>

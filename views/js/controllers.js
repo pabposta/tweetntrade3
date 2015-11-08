@@ -61,6 +61,7 @@ function ScoresCtrl($scope, $http) {
                 }
             }
             $scope.series = bucketsToSeries(bucketsBySymbol);
+            $scope.chartOptions = {};
         });
     };
 
@@ -86,10 +87,26 @@ function ScoresCtrl($scope, $http) {
                 x: x,
                 y: [longSL, longTP, shortSL, shortTP],
                 names: ['Long SL', 'Long TP', 'Short SL', 'Short TP'],
-                symbol: symbol
+                symbol: symbol,
+                colors: ['#0fbffa', '#316638', '#10b524', '#10f4b5']
             };
             series.push(data);
         }
+        series.sort(function(a, b) {
+            var volumeA = 0,
+                volumeB = 0;
+            for (var i = 0; i < a.y.length; i++) {
+                for (var j = 0; j < a.y[i].length; j++) {
+                    volumeA += a.y[i][j];
+                }
+            }
+            for (var i = 0; i < b.y.length; i++) {
+                for (var j = 0; j < b.y[i].length; j++) {
+                    volumeB += b.y[i][j];
+                }
+            }
+            return volumeB - volumeA;
+        });
         return series;
     }
 }
