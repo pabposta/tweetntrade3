@@ -5,128 +5,91 @@ ScoresCtrl.$inject = ['$scope', '$http'];
 function ScoresCtrl($scope, $http) {
 
     $scope.init = function() {
-        $http.get('/scores/EURUSD?count=48').success(function(data) {
-            $scope.scores = data.scores;
-            $scope.scores.reverse();  // the array comes from the server sorted from most recent to oldest
-            $scope.scores.map(function(score) {
-                score.timestamp = moment(score.timestamp * 1000).format("HH:mm");
-            });
-            rawScores();
-            volume();
-            hourlyScores();
-            latestScore();
+        $http.get('/tweets').success(function(data) {
+            var bySymbol = {};
+            for (var i = 0; i < data.length; i++) {
+                var symbol = data[i].symbol;
+                if (bySymbol[symbol]) bySymbol[symbol].push(data[i]);
+                else bySymbol[symbol] = [data[i]];
+            }
+            var valuesBySymbol = {};
+            for (var symbol in bySymbol) {
+                var tweets = bySymbol[symbol],
+                    values = {longSL: [], longTP: [], shortSL: [], shortTP: [], min: Number.MAX_VALUE,
+                              max: Number.MIN_VALUE};
+                for (var i = 0; i < tweets.length; i++) {
+                    var stop = tweets[i].stop;
+                    var target = tweets[i].target;
+                    if (stop <= target) {
+                        values.longSL.push(stop);
+                        values.longTP.push(target);
+                    }
+                    else {
+                        values.shortSL.push(stop);
+                        values.shortTP.push(target);
+                    }
+                    values.min = Math.min(values.min, stop, target);
+                    values.max = Math.max(values.max, stop, target);
+                }
+                valuesBySymbol[symbol] = values;
+            }
+            var bucketsBySymbol = {};
+            for (var symbol in valuesBySymbol) {
+                var NUM_BUCKETS = 50;
+                var min = valuesBySymbol[symbol].min;
+                var delta = (valuesBySymbol[symbol].max - min) / (NUM_BUCKETS - 1);
+                bucketsBySymbol[symbol] = [];
+                for (var i = 0; i < NUM_BUCKETS; i++) {
+                    bucketsBySymbol[symbol].push({x: min + delta * i, yLongSL: 0, yLongTP: 0, yShortSL: 0,
+                                                  yShortTP: 0});
+                }
+                for (var i = 0; i < valuesBySymbol[symbol].longSL.length; i++) {
+                    var bucket = parseInt((valuesBySymbol[symbol].longSL[i] - min) / delta);
+                    bucketsBySymbol[symbol][bucket].yLongSL++;
+                }
+                for (var i = 0; i < valuesBySymbol[symbol].longTP.length; i++) {
+                    var bucket = parseInt((valuesBySymbol[symbol].longTP[i] - min) / delta);
+                    bucketsBySymbol[symbol][bucket].yLongTP++;
+                }
+                for (var i = 0; i < valuesBySymbol[symbol].shortSL.length; i++) {
+                    var bucket = parseInt((valuesBySymbol[symbol].shortSL[i] - min) / delta);
+                    bucketsBySymbol[symbol][bucket].yShortSL++;
+                }
+                for (var i = 0; i < valuesBySymbol[symbol].shortTP.length; i++) {
+                    var bucket = parseInt((valuesBySymbol[symbol].shortTP[i] - min) / delta);
+                    bucketsBySymbol[symbol][bucket].yShortTP++;
+                }
+            }
+            $scope.series = bucketsToSeries(bucketsBySymbol);
         });
     };
 
-    function rawScores() {
-        $scope.rawScoresSeries = ['Score'];
-
-        $scope.rawScoresX = $scope.scores.map(function(score) {
-            return score.timestamp;
-        });
-
-        $scope.rawScoresY = [$scope.scores.map(function(score) {
-            return (score.score * 100.0).toFixed(2);
-        }),
-        $scope.scores.map(function(score) {
-            if (score == $scope.scores[0] || score == $scope.scores[$scope.scores.length - 1])
-                return 0.0;
-            return null;
-        })];
-
-        $scope.rawScoresOptions = {
-            datasetFill: false
-        };
-    }
-
-    function volume() {
-        $scope.volumeSeries = ['Volume'];
-
-        $scope.volumeX = $scope.scores.map(function(score) {
-            return score.timestamp;
-        });
-
-        $scope.volumeY = [$scope.scores.map(function(score) {
-            return score.volume;
-        })];
-    }
-
-    function hourlyVolumeWeightedAverage() {
-        // split scores into groups of two
-        var size = 2,
-            scoreGroups = [],
-            avgScores = [],
-            labels = [];
-        for (var i = 0; i < $scope.scores.length; i += size) {
-            scoreGroups.push($scope.scores.slice(i, size+i));
+    function bucketsToSeries(bucketsBySymbol) {
+        var series = [];
+        for (var symbol in bucketsBySymbol) {
+            var x = bucketsBySymbol[symbol].map(function(point) {
+                return point.x.toFixed(4);
+            }),
+                longSL = bucketsBySymbol[symbol].map(function(point) {
+                return point.yLongSL;
+            }),
+                longTP = bucketsBySymbol[symbol].map(function(point) {
+                return point.yLongTP;
+            }),
+                shortSL = bucketsBySymbol[symbol].map(function(point) {
+                return point.yShortSL;
+            }),
+                shortTP = bucketsBySymbol[symbol].map(function(point) {
+                return point.yShortTP;
+            }),
+            data = {
+                x: x,
+                y: [longSL, longTP, shortSL, shortTP],
+                names: ['Long SL', 'Long TP', 'Short SL', 'Short TP'],
+                symbol: symbol
+            };
+            series.push(data);
         }
-        for (i = 0; i < scoreGroups.length; i++) {
-            var scoreSum = 0,
-                volumeSum = 0;
-            for (var j = 0; j < scoreGroups[i].length; j++) {
-                scoreSum += scoreGroups[i][j].score * scoreGroups[i][j].volume;
-                volumeSum += scoreGroups[i][j].volume;
-            }
-            var avgScore = volumeSum ? scoreSum / volumeSum : 0;
-            avgScores.push(avgScore);
-            labels.push(scoreGroups[i][0].timestamp);
-        }
-        $scope.hvwa = avgScores;
-        $scope.hourlyLabels = labels;
-    }
-
-    function decimalToHex(decimal) {
-        decimal = Math.max(decimal, 0);
-        var hex = decimal.toString(16);
-        if (hex.length < 2) {
-            hex = '0' + hex;
-        }
-        return hex;
-    }
-
-    function color(score) {
-        var r = Math.round(-score * 127 + 127),
-            g = Math.round(score * 127 + 127),
-            b = Math.round(127 - Math.abs(score) * 127),
-            hex = '#' + decimalToHex(r) + decimalToHex(g) + decimalToHex(b);
-        return hex;
-    }
-
-    function hourlyScores() {
-        hourlyVolumeWeightedAverage();
-
-        $scope.hourlyScoresX = $scope.hourlyLabels;
-
-        $scope.hourlyScoresY = $scope.hvwa.map(function(score) {
-            return (Math.abs(score) * 100.0).toFixed(2);
-        });
-
-        $scope.hourlyScoresOptions = {
-            scaleBeginAtZero: false
-        };
-
-        $scope.hourlyScoresColours = $scope.hvwa.map(color);
-    }
-
-    function latestScore() {
-        var score = $scope.hvwa[$scope.hvwa.length - 1];
-        var hex = color(score);
-        score = (score * 100.0).toFixed(2);
-        
-        $scope.latestScoreX = [$scope.hourlyLabels[$scope.hourlyLabels.length - 1], ''];
-        $scope.latestScoreColours = [hex, '#7f7f7f'];
-        if (score < 0) {
-            score *= -1;
-        }
-        $scope.latestScoreY = [score, 100.0 - score];
-
-        var maxVolume = $scope.scores.reduce(function(max, score) {
-           return Math.max(max, score.volume);
-        }, 0);
-        var volumeInPercent = maxVolume ? $scope.scores[$scope.scores.length - 1].volume / maxVolume : 0;
-        var donutWidth = 95.0 - volumeInPercent * 60;
-        $scope.latestScoreOptions = {
-            percentageInnerCutout: donutWidth
-        };
+        return series;
     }
 }

@@ -29,10 +29,10 @@ class AppAuthHandler(tweepy.auth.AuthHandler):
 
 
 class Poller(object):
-    consumer_key = "xPFnQOF4L2Kn925fYSyZimjoe"
-    consumer_secret = "RXj6M4hY8CUpFr3F2nZe1byu63oVFTy4pgm6AHNRpXmCRXmcR1"
-    search_keywords = ['eurusd']
-    page_size = 15  # 15 tweets per page. should be configurable up to 100, but it's not working, apparently the new
+    consumer_key = "9TGU7Kut5W6qucLdqDbB9e6Ge"
+    consumer_secret = "rX8ILrGEDa1a2MZf3xMDNs1PSUPDsBp8pYq1HYHi82SJAu8Qam"
+    search_keywords = ['SL', 'TP']
+    page_size = 100  # 15 tweets per page. should be configurable up to 100, but it's not working, apparently the new
     # parameter is count and no longer rpp TODO check if it works with tweepy
     rate_limit = 450  # twitters rate limit
     max_results = page_size * rate_limit / 2  # let's be safe and only deplete half the rate in every call
@@ -46,12 +46,13 @@ class Poller(object):
         since = Time.seconds_ago(self.interval)
         return since
 
-    def search(self, calculator):
+    def search(self):
         since = self.calculate_since()
-        query= '{}+{}+OR+{}'.format('+OR+'.join(self.search_keywords), '+OR+'.join(calculator.buy_words),
-                                    '+OR+'.join(calculator.sell_words))
+        query= '+'.join(self.search_keywords)
+        tweets = []
         for tweet in tweepy.Cursor(self.api.search, q=query, count=self.page_size).items(self.max_results):
             # once we get to the minimum time, we are done
             if tweet.created_at < since:
-                return
-            calculator.add_tweet(tweet)
+                return tweets
+            tweets.append(tweet)
+        return tweets

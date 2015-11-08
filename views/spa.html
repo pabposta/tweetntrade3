@@ -13,46 +13,18 @@
         <div class="row">
             <div class="col-md-12 text-center">
                 <div class="jumbotron">
-                    <h1>Twitter sentiment for EUR/USD</h1>
+                    <h1>Twitter trades</h1>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-6">
+        <div class="row" ng-repeat="s in series">
+            <div class="col-md-12">
                 <h1>
-                    <span class="label label-primary">Hourly scores</span>
+                    <span class="label label-info">{{ s.symbol }}</span>
                 </h1>
-                <canvas id="hourlyScores" class="chart chart-polar-area" chart-labels="hourlyScoresX"
-                        chart-data="hourlyScoresY" chart-colours="hourlyScoresColours"></canvas>
-            </div>
-            <div class="col-md-6">
-                <h1>
-                    <span class="label label-success">Last hour</span>
-                </h1>
-                <canvas id="latestScore" class="chart chart-doughnut" chart-labels="latestScoreX"
-                        chart-data="latestScoreY" chart-colours="latestScoreColours"
-                        chart-options="latestScoreOptions"></canvas>
+                <canvas class="chart chart-bar" chart-labels="s.x" chart-data="s.y" chart-series="s.names"></canvas>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-6">
-                <h1>
-                    <span class="label label-warning">Scores</span>
-                </h1>
-                <canvas id="rawScores" class="chart chart-line" chart-labels="rawScoresX" chart-data="rawScoresY"
-                        chart-series="rawScoresSeries" chart-options="rawScoresOptions"></canvas>
-            </div>
-            <div class="col-md-6">
-                <h1>
-                    <span class="label label-info">Volume</span>
-                </h1>
-                <canvas id="volume" class="chart chart-bar" chart-labels="volumeX" chart-data="volumeY"
-                        chart-series="volumeSeries"></canvas>
-            </div>
-        </div>
-{% endraw %}
-        {% include 'views/_chart.html' %}
-{% raw %}
     </div>
     <script src="/vendor/js/angular.min.js"></script>
     <script src="/vendor/js/moment.min.js"></script>
