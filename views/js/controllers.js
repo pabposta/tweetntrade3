@@ -5,7 +5,13 @@ ScoresCtrl.$inject = ['$scope', '$http'];
 function ScoresCtrl($scope, $http) {
 
     $scope.init = function() {
-        $http.get('/tweets').success(function(data) {
+        $scope.hours = 1;
+        $scope.$watch("hours", updateScores);
+    };
+
+    function updateScores() {
+        console.log($scope.hours);
+        $http.get('/tweets?hours=' + $scope.hours).success(function(data) {
             var bySymbol = {};
             for (var i = 0; i < data.length; i++) {
                 var symbol = data[i].symbol;
@@ -78,7 +84,7 @@ function ScoresCtrl($scope, $http) {
                 }
             };
         });
-    };
+    }
 
     function bucketsToSeriesNvd3(bucketsBySymbol) {
         var series = {};

@@ -17,6 +17,26 @@
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-12">
+                <label class="radio-inline">
+                    <input type="radio" name="hours" ng-model="hours" ng-value="1">
+                    1 hour
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="hours" ng-model="hours" ng-value="4">
+                    4 hours
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="hours" ng-model="hours" ng-value="12">
+                    12 hours
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="hours" ng-model="hours" ng-value="24">
+                    24 hours
+                </label>
+            </div>
+        </div>
         <div class="row" ng-repeat="(symbol, data) in series" ng-cloak>
             <div class="col-md-12">
                 <h1>
@@ -24,7 +44,7 @@
                 </h1>
                 <!--canvas class="chart chart-bar" chart-labels="s.x" chart-data="s.y" chart-series="s.names",
                         chart-colours="s.colors" chart-options="chartOptions" height="100"></canvas-->
-                <nvd3 options="chartOptions" data="data"></nvd3>
+                <nvd3 options="chartOptions" data="data" config="{deepWatchData: true, refreshDataOnly: false}"></nvd3>
             </div>
         </div>
     </div>
@@ -32,7 +52,7 @@
     <script src="/vendor/js/moment.min.js"></script>
     <script src="/vendor/js/d3.min.js"></script>
     <script src="/vendor/js/nv.d3.min.js"></script>
-    <script src="/vendor/js/angular-nvd3.min.js"></script>
+    <script src="/vendor/js/angular-nvd3.min.js">   </script>
     <script src="/vendor/js/jquery-2.1.4.min.js"></script>
     <script src="/vendor/js/bootstrap.min.js"></script>
     <script src="/views/js/controllers.js"></script>
