@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Tweet n Trade</title>
     <link rel="stylesheet" href="/vendor/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/vendor/css/angular-chart.css">
+    <link rel="stylesheet" href="/vendor/css/nv.d3.min.css">
     <link rel="stylesheet" href="/views/css/spa.css">
 </head>
 <body ng-app="tweetNTrade">
@@ -17,20 +17,22 @@
                 </div>
             </div>
         </div>
-        <div class="row" ng-repeat="s in series" ng-cloak>
+        <div class="row" ng-repeat="(symbol, data) in series" ng-cloak>
             <div class="col-md-12">
                 <h1>
-                    <span class="label label-info">{{ s.symbol }}</span>
+                    <span class="label label-info">{{ symbol }}</span>
                 </h1>
-                <canvas class="chart chart-bar" chart-labels="s.x" chart-data="s.y" chart-series="s.names",
-                        chart-colours="s.colors" chart-options="chartOptions" height="100"></canvas>
+                <!--canvas class="chart chart-bar" chart-labels="s.x" chart-data="s.y" chart-series="s.names",
+                        chart-colours="s.colors" chart-options="chartOptions" height="100"></canvas-->
+                <nvd3 options="chartOptions" data="data"></nvd3>
             </div>
         </div>
     </div>
     <script src="/vendor/js/angular.min.js"></script>
     <script src="/vendor/js/moment.min.js"></script>
-    <script src="/vendor/js/Chart.min.js"></script>
-    <script src="/vendor/js/angular-chart.js"></script>
+    <script src="/vendor/js/d3.min.js"></script>
+    <script src="/vendor/js/nv.d3.min.js"></script>
+    <script src="/vendor/js/angular-nvd3.min.js"></script>
     <script src="/vendor/js/jquery-2.1.4.min.js"></script>
     <script src="/vendor/js/bootstrap.min.js"></script>
     <script src="/views/js/controllers.js"></script>

@@ -1,4 +1,4 @@
-var tweetNTradeApp = angular.module('tweetNTrade', ['chart.js']);
+var tweetNTradeApp = angular.module('tweetNTrade', ['nvd3']);
 
 tweetNTradeApp.controller('ScoresCtrl', ScoresCtrl);
 ScoresCtrl.$inject = ['$scope', '$http'];
@@ -60,12 +60,52 @@ function ScoresCtrl($scope, $http) {
                     bucketsBySymbol[symbol][bucket].yShortTP++;
                 }
             }
-            $scope.series = bucketsToSeries(bucketsBySymbol);
-            $scope.chartOptions = {};
+            $scope.series = bucketsToSeriesNvd3(bucketsBySymbol);
+            $scope.chartOptions = {
+                chart: {
+                    type: 'multiBarChart',
+                    height: 450,
+                    margin : {
+                        top: 20,
+                        right: 20,
+                        bottom: 60,
+                        left: 45
+                    },
+                    clipEdge: true,
+                    staggerLabels: true,
+                    transitionDuration: 500,
+                    stacked: false
+                }
+            };
         });
     };
 
-    function bucketsToSeries(bucketsBySymbol) {
+    function bucketsToSeriesNvd3(bucketsBySymbol) {
+        var series = {};
+        for (var symbol in bucketsBySymbol) {
+            var longSL = bucketsBySymbol[symbol].map(function(point) {
+                return {x: point.x.toFixed(4), y: point.yLongSL};
+            }),
+            longTP = bucketsBySymbol[symbol].map(function(point) {
+                return {x: point.x.toFixed(4), y: point.yLongTP};
+            }),
+            shortSL = bucketsBySymbol[symbol].map(function(point) {
+                return {x: point.x.toFixed(4), y: -point.yShortSL};
+            }),
+            shortTP = bucketsBySymbol[symbol].map(function(point) {
+                return {x: point.x.toFixed(4), y: -point.yShortTP};
+            });
+            series[symbol] = [
+                {key: 'Long TP', values: longTP},
+                {key: 'Short TP', values: shortTP},
+                {key: 'Long SL', values: longSL},
+                {key: 'Short SL', values: shortSL}
+            ];
+        }
+        return series;
+    }
+
+    function bucketsToSeriesChartJs(bucketsBySymbol) {
         var series = [];
         for (var symbol in bucketsBySymbol) {
             var x = bucketsBySymbol[symbol].map(function(point) {
