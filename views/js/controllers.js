@@ -10,7 +10,6 @@ function ScoresCtrl($scope, $http) {
     };
 
     function updateScores() {
-        console.log($scope.hours);
         $http.get('/tweets?hours=' + $scope.hours).success(function(data) {
             var bySymbol = {};
             for (var i = 0; i < data.length; i++) {
