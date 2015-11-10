@@ -142,12 +142,12 @@ function ScoresCtrl($scope, $http) {
                 volumeB = 0;
             for (var i = 0; i < a.y.length; i++) {
                 for (var j = 0; j < a.y[i].length; j++) {
-                    volumeA += a.y[i][j];
+                    volumeA += Math.abs(a.y[i][j]);
                 }
             }
             for (var i = 0; i < b.y.length; i++) {
                 for (var j = 0; j < b.y[i].length; j++) {
-                    volumeB += b.y[i][j];
+                    volumeB += Math.abs(b.y[i][j]);
                 }
             }
             return volumeB - volumeA;
