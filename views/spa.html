@@ -37,14 +37,15 @@
                 </label>
             </div>
         </div>
-        <div class="row" ng-repeat="(symbol, data) in series" ng-cloak>
+        <div class="row" ng-repeat="serie in series" ng-cloak>
             <div class="col-md-12">
                 <h1>
-                    <span class="label label-info">{{ symbol }}</span>
+                    <span class="label label-info">{{ serie.symbol }}</span>
                 </h1>
                 <!--canvas class="chart chart-bar" chart-labels="s.x" chart-data="s.y" chart-series="s.names",
                         chart-colours="s.colors" chart-options="chartOptions" height="100"></canvas-->
-                <nvd3 options="chartOptions" data="data" config="{deepWatchData: true, refreshDataOnly: false}"></nvd3>
+                <nvd3 options="chartOptions" data="serie.data"
+                      config="{deepWatchData: true, refreshDataOnly: false}"></nvd3>
             </div>
         </div>
     </div>

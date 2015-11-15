@@ -2,8 +2,12 @@ import re
 from models.dao.tweet import Tweet
 
 class Parser(object):
-    symbols = {'AUDUSD', 'EURAUD', 'EURCAD', 'EURCHF', 'EURUSD', 'GBPUSD', 'NZDCAD', 'NZDJPY', 'NZDUSD', 'USDCAD',
-               'USDJPY'}
+    symbols = {'AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD', 'AUDSGD', 'AUDUSD', 'CADCHF', 'CADJPY', 'CHFDKK', 'CHFJPY',
+               'CHFNOK', 'CHFSEK', 'DKKNOK', 'EURAUD', 'EURCAD', 'EURCHF', 'EURCZK', 'EURGBP', 'EURJPY', 'EURMXN',
+               'EURNOK', 'EURNZD', 'EURPLN', 'EURSEK', 'EURSGD', 'EURTRY', 'EURUSD', 'GBPAUD', 'GBPCAD', 'GBPCHF',
+               'GBPDKK', 'GBPJPY', 'GBPNOK', 'GBPNZD', 'GBPSEK', 'GBPUSD', 'NZDCAD', 'NZDCHF', 'NZDJPY', 'NZDUSD',
+               'SEKNOK', 'USDCAD', 'USDCHF', 'USDCNH', 'USDDKK', 'USDHKD', 'USDJPY', 'USDMXN', 'USDNOK', 'USDPLN',
+               'USDRON', 'USDRUB', 'USDSEK', 'USDSGD', 'USDTRY', 'USDZAR'}
 
     def __init__(self):
         self.digit_re = re.compile(r"\d*\.?\d+")

@@ -86,7 +86,7 @@ function ScoresCtrl($scope, $http) {
     }
 
     function bucketsToSeriesNvd3(bucketsBySymbol) {
-        var series = {};
+        var series = [];
         for (var symbol in bucketsBySymbol) {
             var longSL = bucketsBySymbol[symbol].map(function(point) {
                 return {x: point.x.toFixed(4), y: point.yLongSL};
@@ -100,13 +100,31 @@ function ScoresCtrl($scope, $http) {
             shortTP = bucketsBySymbol[symbol].map(function(point) {
                 return {x: point.x.toFixed(4), y: -point.yShortTP};
             });
-            series[symbol] = [
-                {key: 'Long TP', values: longTP},
-                {key: 'Short TP', values: shortTP},
-                {key: 'Long SL', values: longSL},
-                {key: 'Short SL', values: shortSL}
-            ];
+            series.push({
+                symbol: symbol,
+                data: [
+                    {key: 'Long TP', values: longTP},
+                    {key: 'Short TP', values: shortTP},
+                    {key: 'Long SL', values: longSL},
+                    {key: 'Short SL', values: shortSL}
+                ]
+            });
         }
+        series.sort(function(a, b) {
+            var volumeA = 0,
+                volumeB = 0;
+            for (var i = 0; i < a.data.length; i++) {
+                for (var j = 0; j < a.data[i].values.length; j++) {
+                    volumeA += Math.abs(a.data[i].values[j].y);
+                }
+            }
+            for (var i = 0; i < b.data.length; i++) {
+                for (var j = 0; j < b.data[i].values.length; j++) {
+                    volumeB += Math.abs(b.data[i].values[j].y);
+                }
+            }
+            return volumeB - volumeA;
+        });
         return series;
     }
 
