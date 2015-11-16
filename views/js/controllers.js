@@ -43,6 +43,11 @@ function ScoresCtrl($scope, $http) {
                 var NUM_BUCKETS = 50;
                 var min = valuesBySymbol[symbol].min;
                 var delta = (valuesBySymbol[symbol].max - min) / (NUM_BUCKETS - 1);
+                if (delta == 0) {
+                    // this actually happens. a symbol where TP and SL have the same values and those are the only
+                    // values there are
+                    continue;
+                }
                 bucketsBySymbol[symbol] = [];
                 for (var i = 0; i < NUM_BUCKETS; i++) {
                     bucketsBySymbol[symbol].push({x: min + delta * i, yLongSL: 0, yLongTP: 0, yShortSL: 0,
@@ -52,6 +57,7 @@ function ScoresCtrl($scope, $http) {
                     var bucket = parseInt((valuesBySymbol[symbol].longSL[i] - min) / delta);
                     bucketsBySymbol[symbol][bucket].yLongSL++;
                 }
+
                 for (var i = 0; i < valuesBySymbol[symbol].longTP.length; i++) {
                     var bucket = parseInt((valuesBySymbol[symbol].longTP[i] - min) / delta);
                     bucketsBySymbol[symbol][bucket].yLongTP++;
