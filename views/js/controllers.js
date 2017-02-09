@@ -4,74 +4,30 @@ tweetNTradeApp.controller('ScoresCtrl', ScoresCtrl);
 ScoresCtrl.$inject = ['$scope', '$http'];
 function ScoresCtrl($scope, $http) {
 
-    $scope.init = function() {
+    var seriesWithOutliers, seriesWithoutOutliers;
+
+    $scope.init = function () {
         $scope.hours = 1;
+        $scope.excludeOutliers = 1;
         $scope.$watch("hours", updateScores);
+        $scope.$watch("excludeOutliers", decideSeries);
     };
 
     function updateScores() {
-        $http.get('/tweets?hours=' + $scope.hours).success(function(data) {
+        var url = '/tweets?hours=' + $scope.hours;
+        $http.get(url).success(function (data) {
             var bySymbol = {};
             for (var i = 0; i < data.length; i++) {
                 var symbol = data[i].symbol;
                 if (bySymbol[symbol]) bySymbol[symbol].push(data[i]);
                 else bySymbol[symbol] = [data[i]];
             }
-            var valuesBySymbol = {};
-            for (var symbol in bySymbol) {
-                var tweets = bySymbol[symbol],
-                    values = {longSL: [], longTP: [], shortSL: [], shortTP: [], min: Number.MAX_VALUE,
-                              max: Number.MIN_VALUE};
-                for (var i = 0; i < tweets.length; i++) {
-                    var stop = tweets[i].stop;
-                    var target = tweets[i].target;
-                    if (stop <= target) {
-                        values.longSL.push(stop);
-                        values.longTP.push(target);
-                    }
-                    else {
-                        values.shortSL.push(stop);
-                        values.shortTP.push(target);
-                    }
-                    values.min = Math.min(values.min, stop, target);
-                    values.max = Math.max(values.max, stop, target);
-                }
-                valuesBySymbol[symbol] = values;
-            }
-            var bucketsBySymbol = {};
-            for (var symbol in valuesBySymbol) {
-                var NUM_BUCKETS = 50;
-                var min = valuesBySymbol[symbol].min;
-                var delta = (valuesBySymbol[symbol].max - min) / (NUM_BUCKETS - 1);
-                if (delta == 0) {
-                    // this actually happens. a symbol where TP and SL have the same values and those are the only
-                    // values there are
-                    continue;
-                }
-                bucketsBySymbol[symbol] = [];
-                for (var i = 0; i < NUM_BUCKETS; i++) {
-                    bucketsBySymbol[symbol].push({x: min + delta * i, yLongSL: 0, yLongTP: 0, yShortSL: 0,
-                                                  yShortTP: 0});
-                }
-                for (var i = 0; i < valuesBySymbol[symbol].longSL.length; i++) {
-                    var bucket = parseInt((valuesBySymbol[symbol].longSL[i] - min) / delta);
-                    bucketsBySymbol[symbol][bucket].yLongSL++;
-                }
 
-                for (var i = 0; i < valuesBySymbol[symbol].longTP.length; i++) {
-                    var bucket = parseInt((valuesBySymbol[symbol].longTP[i] - min) / delta);
-                    bucketsBySymbol[symbol][bucket].yLongTP++;
-                }
-                for (var i = 0; i < valuesBySymbol[symbol].shortSL.length; i++) {
-                    var bucket = parseInt((valuesBySymbol[symbol].shortSL[i] - min) / delta);
-                    bucketsBySymbol[symbol][bucket].yShortSL++;
-                }
-                for (var i = 0; i < valuesBySymbol[symbol].shortTP.length; i++) {
-                    var bucket = parseInt((valuesBySymbol[symbol].shortTP[i] - min) / delta);
-                    bucketsBySymbol[symbol][bucket].yShortTP++;
-                }
-            }
-            $scope.series = bucketsToSeriesNvd3(bucketsBySymbol);
+            var valuesBySymbolWithOutliers = calcValuesBySymbol(bySymbol);
+            var    valuesBySymbolWithoutOutliers = excludeOutliers(valuesBySymbolWithOutliers);
+            seriesWithOutliers = bucketsToSeriesNvd3(calcBucketsBySymbol(valuesBySymbolWithOutliers));
+            seriesWithoutOutliers = bucketsToSeriesNvd3(calcBucketsBySymbol(valuesBySymbolWithoutOutliers));
+
             $scope.chartOptions = {
                 chart: {
                     type: 'multiBarChart',
@@ -88,7 +44,110 @@ function ScoresCtrl($scope, $http) {
                     stacked: false
                 }
             };
+            decideSeries();
         });
+    }
+
+    function decideSeries() {
+        $scope.series = $scope.excludeOutliers ? seriesWithoutOutliers : seriesWithOutliers;
+    }
+
+    function excludeOutliers(valuesBySymbol) {
+        var filteredValuesBySymbol = {};
+        for (var symbol in valuesBySymbol) {
+            var values = valuesBySymbol[symbol],
+                longTargetMean = ss.mean(values.longTP),
+                longTargetStd = ss.standardDeviation(values.longTP),
+                longStopMean = ss.mean(values.longSL),
+                longStopStd = ss.standardDeviation(values.longSL),
+                shortTargetMean = ss.mean(values.shortTP),
+                shortTargetStd = ss.standardDeviation(values.shortTP),
+                shortStopMean = ss.mean(values.shortSL),
+                shortStopStd = ss.standardDeviation(values.shortSL);
+
+            filteredValuesBySymbol[symbol] = {
+                longTP: values.longTP.filter(excludeFunc(longTargetMean, longTargetStd)),
+                longSL: values.longSL.filter(excludeFunc(longStopMean, longStopStd)),
+                shortTP: values.shortTP.filter(excludeFunc(shortTargetMean, shortTargetStd)),
+                shortSL: values.shortSL.filter(excludeFunc(shortStopMean, shortStopStd))
+            };
+            var filteredValues = filteredValuesBySymbol[symbol],
+                allValues = filteredValues.longTP.concat(filteredValues.longSL).concat(filteredValues.shortTP).
+                            concat(filteredValues.shortSL);
+            filteredValues.min = Math.min.apply(Math, allValues);
+            filteredValues.max = Math.max.apply(Math, allValues);
+        }
+        return filteredValuesBySymbol;
+    }
+
+    function excludeFunc(mean, stdev) {
+        return function (value) {
+            return mean - 2 * stdev <= value && value <= mean + 2 * stdev;
+        }
+    }
+
+    function calcValuesBySymbol(bySymbol) {
+        var valuesBySymbol = {};
+        for (var symbol in bySymbol) {
+            var tweets = bySymbol[symbol],
+                values = {longSL: [], longTP: [], shortSL: [], shortTP: [], min: Number.MAX_VALUE,
+                          max: Number.MIN_VALUE};
+            for (var i = 0; i < tweets.length; i++) {
+                var stop = tweets[i].stop;
+                var target = tweets[i].target;
+                if (stop <= target) {
+                    values.longSL.push(stop);
+                    values.longTP.push(target);
+                }
+                else {
+                    values.shortSL.push(stop);
+                    values.shortTP.push(target);
+                }
+                values.min = Math.min(values.min, stop, target);
+                values.max = Math.max(values.max, stop, target);
+            }
+            valuesBySymbol[symbol] = values;
+        }
+        return valuesBySymbol;
+    }
+
+    function calcBucketsBySymbol(valuesBySymbol) {
+        var bucketsBySymbol = {};
+        for (var symbol in valuesBySymbol) {
+            var NUM_BUCKETS = 50;
+            var min = valuesBySymbol[symbol].min;
+            var delta = (valuesBySymbol[symbol].max - min) / (NUM_BUCKETS - 1);
+            if (delta == 0) {
+                // this actually happens. a symbol where TP and SL have the same values and those are the only
+                // values there are
+                continue;
+            }
+            bucketsBySymbol[symbol] = [];
+            for (var i = 0; i < NUM_BUCKETS; i++) {
+                bucketsBySymbol[symbol].push({
+                    x: min + delta * i, yLongSL: 0, yLongTP: 0, yShortSL: 0,
+                    yShortTP: 0
+                });
+            }
+            for (var i = 0; i < valuesBySymbol[symbol].longSL.length; i++) {
+                var bucket = parseInt((valuesBySymbol[symbol].longSL[i] - min) / delta);
+                bucketsBySymbol[symbol][bucket].yLongSL++;
+            }
+
+            for (var i = 0; i < valuesBySymbol[symbol].longTP.length; i++) {
+                var bucket = parseInt((valuesBySymbol[symbol].longTP[i] - min) / delta);
+                bucketsBySymbol[symbol][bucket].yLongTP++;
+            }
+            for (var i = 0; i < valuesBySymbol[symbol].shortSL.length; i++) {
+                var bucket = parseInt((valuesBySymbol[symbol].shortSL[i] - min) / delta);
+                bucketsBySymbol[symbol][bucket].yShortSL++;
+            }
+            for (var i = 0; i < valuesBySymbol[symbol].shortTP.length; i++) {
+                var bucket = parseInt((valuesBySymbol[symbol].shortTP[i] - min) / delta);
+                bucketsBySymbol[symbol][bucket].yShortTP++;
+            }
+        }
+        return bucketsBySymbol;
     }
 
     function bucketsToSeriesNvd3(bucketsBySymbol) {

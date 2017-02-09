@@ -3,6 +3,7 @@ from models.poller import Poller
 from models.parser import Parser
 from models.dao.tweet import Tweet
 
+
 class PollController(webapp2.RequestHandler):
     default_interval = 60*60
 

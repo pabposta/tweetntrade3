@@ -1,6 +1,7 @@
 from time import mktime
 from google.appengine.ext import ndb
 
+
 class Tweet(ndb.Model):
     symbol = ndb.StringProperty(required=True)
     timestamp = ndb.DateTimeProperty(required=True)

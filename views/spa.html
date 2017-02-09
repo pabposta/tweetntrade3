@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name=viewport" content="width=device-width, initial-scale=1">
     <title>Tweet n Trade</title>
     <link rel="stylesheet" href="/vendor/css/bootstrap.min.css">
     <link rel="stylesheet" href="/vendor/css/nv.d3.min.css">
@@ -18,7 +19,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-sm-12 col-md-6">
                 <label class="radio-inline">
                     <input type="radio" name="hours" ng-model="hours" ng-value="1">
                     1 hour
@@ -34,6 +35,16 @@
                 <label class="radio-inline">
                     <input type="radio" name="hours" ng-model="hours" ng-value="24">
                     24 hours
+                </label>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <label class="radio-inline">
+                    <input type="radio" name="excludeOutliers" ng-model="excludeOutliers" ng-value="0">
+                    Include outliers
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="excludeOutliers" ng-model="excludeOutliers" ng-value="1">
+                    Exclude outliers
                 </label>
             </div>
         </div>
@@ -56,6 +67,7 @@
     <script src="/vendor/js/angular-nvd3.min.js">   </script>
     <script src="/vendor/js/jquery-2.1.4.min.js"></script>
     <script src="/vendor/js/bootstrap.min.js"></script>
+    <script src="/vendor/js/simple-statistics.min.js"></script>
     <script src="/views/js/controllers.js"></script>
 </body>
 </html>
